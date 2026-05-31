@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Watchlist 🎬</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0c0a;
+    --surface: #181411;
+    --surface2: #221e1a;
+    --border: #2e2924;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f0e8d8;
+    --muted: #7a6e62;
+    --green: #5a9e6a;
+    --red: #c05a4a;
+    --text: #e8dfd0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 32px 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 900; color: var(--gold); letter-spacing: -0.5px; line-height: 1; }
+  .header-sub { font-size: 0.8rem; color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase; margin-top: 5px; }
+  .header-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .btn-export { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; padding: 8px 14px; background: transparent; color: var(--gold); border: 1px solid #4a3d1e; border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .btn-export:hover { background: #1e1810; border-color: var(--gold); }
+  .btn-import { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; font-weight: 500; letter-spacing: 0.06em; padding: 8px 14px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .btn-import:hover { border-color: var(--muted); color: var(--text); }
+  .tabs { display: flex; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 32px; }
+  .tab { padding: 14px 20px; font-size: 0.82rem; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; background: none; border-top: none; border-left: none; border-right: none; }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .main { padding: 28px 32px; max-width: 900px; }
+  .film-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 20px; transition: border-color 0.2s; }
+  .film-card:hover { border-color: #3d342c; }
+  .film-card.watched-card { opacity: 0.85; }
+  .film-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .film-title { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 700; color: var(--cream); line-height: 1.2; }
+  .film-year { font-size: 0.8rem; color: var(--muted); margin-top: 2px; font-weight: 300; }
+  .film-badges { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; flex-shrink: 0; }
+  .badge { font-size: 0.72rem; font-weight: 500; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 3px; border: 1px solid; }
+  .badge-cert { color: var(--gold); border-color: #4a3d1e; background: #1e1810; }
+  .badge-csm { color: #8ab4a0; border-color: #1e3028; background: #101a14; }
+  .film-synopsis { font-size: 0.9rem; line-height: 1.65; margin-bottom: 12px; }
+  .film-why { font-size: 0.85rem; color: var(--gold-light); line-height: 1.6; margin-bottom: 16px; padding-left: 12px; border-left: 2px solid var(--gold); font-style: italic; }
+  .film-meta { display: flex; gap: 20px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .meta-item { display: flex; flex-direction: column; gap: 2px; }
+  .meta-label { font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+  .meta-value { font-size: 0.85rem; color: var(--text); font-weight: 500; }
+  .rt-score { display: inline-flex; align-items: center; gap: 4px; }
+  .rt-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  .rt-dot.low { background: var(--red); }
+  .where-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+  .where-pill { font-size: 0.72rem; padding: 3px 9px; border-radius: 12px; background: var(--surface2); border: 1px solid var(--border); }
+  .film-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .btn-watched { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; padding: 8px 18px; background: var(--gold); color: #0e0c0a; border: none; border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+  .btn-watched:hover { background: var(--gold-light); }
+  .btn-review { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; padding: 8px 14px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .btn-review:hover { border-color: var(--muted); color: var(--text); }
+  .btn-unwatch { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; padding: 6px 12px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .btn-unwatch:hover { border-color: var(--red); color: var(--red); }
+  .watched-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.75rem; color: var(--green); background: #0e1c12; border: 1px solid #1a3020; padding: 4px 10px; border-radius: 3px; }
+  .review-section { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .review-label { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .review-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; padding: 10px 12px; resize: vertical; min-height: 60px; line-height: 1.5; outline: none; transition: border-color 0.15s; }
+  .review-input:focus { border-color: var(--gold); }
+  .review-input::placeholder { color: var(--muted); }
+  .review-text { font-size: 0.88rem; line-height: 1.6; font-style: italic; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+  .btn-save { margin-top: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.78rem; padding: 6px 14px; background: transparent; border: 1px solid var(--gold); color: var(--gold); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .btn-save:hover { background: #1e1810; }
+  .section-label { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .empty-state { text-align: center; padding: 50px 20px; color: var(--muted); font-size: 0.9rem; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 28px; max-width: 560px; width: 100%; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 1.2rem; color: var(--gold); margin-bottom: 8px; }
+  .modal-sub { font-size: 0.82rem; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
+  .modal-textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; padding: 12px; resize: vertical; height: 180px; line-height: 1.5; outline: none; }
+  .modal-textarea:focus { border-color: var(--gold); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
+  .btn-copy { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; padding: 9px 18px; background: var(--gold); color: #0e0c0a; border: none; border-radius: 4px; cursor: pointer; }
+  .btn-copy:hover { background: var(--gold-light); }
+  .btn-download { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; padding: 9px 18px; background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+  .btn-download:hover { border-color: var(--muted); }
+  .btn-close { font-family: 'DM Sans', sans-serif; font-size: 0.8rem; padding: 9px 14px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+  .copy-ok { font-size: 0.78rem; color: var(--green); display: none; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--green); color: var(--green); font-size: 0.82rem; padding: 10px 20px; border-radius: 4px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+  .storage-note { font-size: 0.72rem; color: var(--muted); padding: 10px 32px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  @media (max-width: 600px) {
+    .header, .tabs, .main { padding-left: 16px; padding-right: 16px; }
+    .film-top { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">🎬 Family Watchlist</div>
+    <div class="header-sub">Curated films · Your reviews</div>
+  </div>
+  <div class="header-actions">
+    <button class="btn-import" onclick="showImport()">⬆ Restore backup</button>
+    <button class="btn-export" onclick="showExport()">⬇ Export backup</button>
+  </div>
+</div>
+<div class="storage-note">💾 Your data is saved locally in this browser — use Export backup to keep a copy safe.</div>
+<div class="tabs">
+  <button class="tab active" id="tab-towatch" onclick="switchTab('towatch')">To Watch</button>
+  <button class="tab" id="tab-watched" onclick="switchTab('watched')">Watched</button>
+</div>
+<div class="main" id="app-content"></div>
+<div id="modal" style="display:none"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'family-watchlist-v1';
+
+const DEFAULT_FILMS = [
+  {
+    id: 'millions', title: 'Millions', year: 2004, cert: 'PG', csmAge: '7+',
+    synopsis: 'Two brothers in suburban Widnes find a bag stuffed with stolen cash flung from a passing train. Nine-year-old Damian wants to give it all to the poor; older brother Anthony wants to buy property. Then the robber comes looking for it.',
+    whyGood: "Danny Boyle's only family film — and a hidden gem. Lego-bright colours, real warmth, and a boy's-eye view of faith and greed that sneaks up on you. The closest thing to CODA in spirit: funny, sad, and quietly brilliant.",
+    rtTomatometer: 87, rtPopcornmeter: null, whereToWatch: ['Disney+'],
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+  },
+  {
+    id: 'sing-street', title: 'Sing Street', year: 2016, cert: '12', csmAge: '13+',
+    synopsis: '1985 Dublin. Teenager Conor, transferred to a tough inner-city school and trying to impress a beautiful older girl, forms a band and starts writing original songs in the style of Duran Duran, The Cure and Hall & Oates.',
+    whyGood: "95% on Rotten Tomatoes and every bit of it earned. Original songs so good you'll be humming them for days. The same joyful music-as-escape DNA as CODA, with an 80s soundtrack that parents will adore. CSM is cautious — 12-year-olds are absolutely fine.",
+    rtTomatometer: 95, rtPopcornmeter: 92, whereToWatch: ['Rent/Buy', 'Check streamers'],
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+  },
+  {
+    id: 'princess-bride', title: 'The Princess Bride', year: 1987, cert: 'PG', csmAge: '10+',
+    synopsis: "Westley, a farm boy, must rescue his true love Buttercup from a scheming prince. Along the way: a giant, a master swordsman, a Sicilian criminal genius, and the immortal line 'As you wish.' Framed as a grandfather reading a storybook.",
+    whyGood: "One of the most beloved family films ever made — 94% audience score from 250,000+ ratings. Swashbuckling, romantic, hilarious, and endlessly quotable.",
+    rtTomatometer: 93, rtPopcornmeter: 94, whereToWatch: ['Disney+'],
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+  },
+  {
+    id: 'free-guy', title: 'Free Guy', year: 2021, cert: '12', csmAge: '12+',
+    synopsis: 'Guy is a cheerful bank teller living in Free City — a chaotic open-world video game. When he realises he is actually a background NPC, he decides to become the hero of his own story.',
+    whyGood: "Ryan Reynolds in a genuinely clever concept. The game-world visuals keep younger viewers hooked. 94% Popcornmeter from 5,000+ verified ratings.",
+    rtTomatometer: 80, rtPopcornmeter: 94, whereToWatch: ['Disney+'],
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+  },
+  {
+    id: 'cool-runnings', title: 'Cool Runnings', year: 1993, cert: 'PG', csmAge: '8+',
+    synopsis: "When Jamaican sprinter Derice Bannock misses the Olympics, he talks a disgraced former bobsled champion (John Candy) into coaching Jamaica's first-ever bobsled team — four men who've never seen snow.",
+    whyGood: "A timeless underdog comedy that still holds up. John Candy is wonderful. Pure feel-good family viewing with genuine laughs and a surprisingly moving finale.",
+    rtTomatometer: 75, rtPopcornmeter: 81, whereToWatch: ['Disney+'],
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+  },
+  {
+    id: 'adam-project', title: 'The Adam Project', year: 2022, cert: '12', csmAge: '10+',
+    synopsis: 'Time-travelling pilot Adam Reed crash-lands in his childhood garden and teams up with his nerdy 12-year-old self. Together they must find their late father — and stop a threat to the future.',
+    whyGood: "Fast, fun, and surprisingly tender about grief and father-son relationships. Ryan Reynolds and the kid actor have brilliant chemistry. On Netflix right now.",
+    rtTomatometer: 68, rtPopcornmeter: 73, whereToWatch: ['Netflix'],
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+  }
+];
+
+let films = [];
+let currentTab = 'towatch';
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function loadFilms() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      films = DEFAULT_FILMS.map(def => {
+        const s = parsed.find(f => f.id === def.id);
+        return s ? { ...def, watched: s.watched, watchedDate: s.watchedDate, userReview: s.userReview, reviewEditing: false } : { ...def };
+      });
+    } else {
+      films = DEFAULT_FILMS.map(f => ({ ...f }));
+    }
+  } catch (e) {
+    films = DEFAULT_FILMS.map(f => ({ ...f }));
+  }
+  render();
+}
+
+function saveFilms() {
+  try {
+    const toSave = films.map(f => ({ id: f.id, watched: f.watched, watchedDate: f.watchedDate, userReview: f.userReview }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch (e) {}
+}
+
+function getExportData() {
+  return JSON.stringify({
+    exportedAt: new Date().toISOString(),
+    version: 1,
+    films: films.map(f => ({ id: f.id, watched: f.watched, watchedDate: f.watchedDate, userReview: f.userReview }))
+  }, null, 2);
+}
+
+function showExport() {
+  const json = getExportData();
+  const modal = document.getElementById('modal');
+  modal.style.display = 'flex';
+  modal.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-title">⬇ Export Backup</div>
+      <div class="modal-sub">Copy the text below or download as a file. Save it somewhere safe — you can restore it any time using "Restore backup".</div>
+      <textarea class="modal-textarea" id="export-text" readonly onclick="this.select()">${json}</textarea>
+      <div class="modal-actions">
+        <button class="btn-copy" onclick="copyExport()">Copy to clipboard</button>
+        <button class="btn-download" onclick="downloadExport()">⬇ Download .json</button>
+        <button class="btn-close" onclick="closeModal()">Close</button>
+        <span class="copy-ok" id="copy-ok">✓ Copied!</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function copyExport() {
+  const ta = document.getElementById('export-text');
+  ta.select();
+  navigator.clipboard.writeText(ta.value).then(() => {
+    document.getElementById('copy-ok').style.display = 'inline';
+    setTimeout(() => document.getElementById('copy-ok').style.display = 'none', 2000);
+  }).catch(() => {
+    document.execCommand('copy');
+    document.getElementById('copy-ok').style.display = 'inline';
+    setTimeout(() => document.getElementById('copy-ok').style.display = 'none', 2000);
+  });
+}
+
+function downloadExport() {
+  const blob = new Blob([getExportData()], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'family-watchlist-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function showImport() {
+  const modal = document.getElementById('modal');
+  modal.style.display = 'flex';
+  modal.innerHTML = `<div class="modal-overlay" onclick="if(event.target===this)closeModal()">
+    <div class="modal">
+      <div class="modal-title">⬆ Restore Backup</div>
+      <div class="modal-sub">Paste your previously exported backup JSON below and hit Restore. This will overwrite your current watched/review data.</div>
+      <textarea class="modal-textarea" id="import-text" placeholder="Paste your backup JSON here..."></textarea>
+      <div class="modal-actions">
+        <button class="btn-copy" onclick="doImport()">Restore</button>
+        <button class="btn-close" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function doImport() {
+  try {
+    const data = JSON.parse(document.getElementById('import-text').value.trim());
+    if (!data.films || !Array.isArray(data.films)) throw new Error();
+    films = DEFAULT_FILMS.map(def => {
+      const s = data.films.find(f => f.id === def.id);
+      return s ? { ...def, watched: s.watched, watchedDate: s.watchedDate, userReview: s.userReview, reviewEditing: false } : { ...def };
+    });
+    saveFilms();
+    closeModal();
+    render();
+    showToast('✓ Backup restored successfully');
+  } catch (e) {
+    alert('Could not read that backup — make sure you pasted the full JSON text.');
+  }
+}
+
+function closeModal() {
+  const modal = document.getElementById('modal');
+  modal.style.display = 'none';
+  modal.innerHTML = '';
+}
+
+function markWatched(id) {
+  const f = films.find(f => f.id === id);
+  if (f) {
+    f.watched = true;
+    f.watchedDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    f.reviewEditing = true;
+    saveFilms();
+    render();
+  }
+}
+
+function markUnwatched(id) {
+  const f = films.find(f => f.id === id);
+  if (f) { f.watched = false; f.watchedDate = null; f.reviewEditing = false; saveFilms(); render(); }
+}
+
+function toggleReviewEdit(id) {
+  const f = films.find(f => f.id === id);
+  if (f) { f.reviewEditing = !f.reviewEditing; render(); }
+}
+
+function saveReview(id) {
+  const f = films.find(f => f.id === id);
+  const ta = document.getElementById('review-' + id);
+  if (f && ta) {
+    f.userReview = ta.value.trim() || null;
+    f.reviewEditing = false;
+    saveFilms();
+    render();
+    showToast('✓ Review saved');
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  render();
+}
+
+function renderFilmCard(f, inWatched) {
+  const rtTomato = f.rtTomatometer ? `<div class="meta-item"><div class="meta-label">Tomatometer</div><div class="meta-value rt-score"><span class="rt-dot${f.rtTomatometer < 70 ? ' low' : ''}"></span>${f.rtTomatometer}%</div></div>` : '';
+  const rtPop = f.rtPopcornmeter ? `<div class="meta-item"><div class="meta-label">Popcornmeter</div><div class="meta-value rt-score"><span class="rt-dot${f.rtPopcornmeter < 70 ? ' low' : ''}"></span>${f.rtPopcornmeter}%</div></div>` : '';
+  const wherePills = f.whereToWatch.map(w => `<span class="where-pill">${w}</span>`).join('');
+
+  let reviewHtml = '';
+  if (inWatched) {
+    if (f.reviewEditing) {
+      const existing = f.userReview || '';
+      reviewHtml = `<div class="review-section"><div class="review-label">Your review</div><textarea class="review-input" id="review-${f.id}" placeholder="What did you think? Did the kids enjoy it?">${existing}</textarea><div style="display:flex;gap:8px;align-items:center;margin-top:8px;"><button class="btn-save" onclick="saveReview('${f.id}')">Save review</button>${existing ? `<button class="btn-review" onclick="toggleReviewEdit('${f.id}')">Cancel</button>` : ''}</div></div>`;
+    } else if (f.userReview) {
+      reviewHtml = `<div class="review-section"><div class="review-label">Your review</div><div class="review-text">${f.userReview}</div><button class="btn-review" onclick="toggleReviewEdit('${f.id}')" style="margin-top:8px;font-size:0.75rem">Edit review</button></div>`;
+    } else {
+      reviewHtml = `<div class="review-section"><button class="btn-review" onclick="toggleReviewEdit('${f.id}')">+ Add your review</button></div>`;
+    }
+  }
+
+  const actions = inWatched
+    ? `<div class="film-actions"><span class="watched-badge">✓ Watched${f.watchedDate ? ' · ' + f.watchedDate : ''}</span><button class="btn-unwatch" onclick="markUnwatched('${f.id}')">Move back to list</button></div>`
+    : `<div class="film-actions"><button class="btn-watched" onclick="markWatched('${f.id}')">✓ Mark as Watched</button></div>`;
+
+  return `<div class="film-card${inWatched ? ' watched-card' : ''}">
+    <div class="film-top"><div><div class="film-title">${f.title}</div><div class="film-year">${f.year}</div></div><div class="film-badges"><span class="badge badge-cert">${f.cert}</span><span class="badge badge-csm">CSM ${f.csmAge}</span></div></div>
+    <div class="film-synopsis">${f.synopsis}</div>
+    <div class="film-why">${f.whyGood}</div>
+    <div class="film-meta">${rtTomato}${rtPop}<div class="meta-item"><div class="meta-label">Where to watch</div><div class="where-pills">${wherePills}</div></div></div>
+    ${actions}${reviewHtml}
+  </div>`;
+}
+
+function render() {
+  const toWatch = films.filter(f => !f.watched);
+  const watched = films.filter(f => f.watched);
+  const el = document.getElementById('app-content');
+  if (currentTab === 'towatch') {
+    el.innerHTML = toWatch.length === 0
+      ? `<div class="empty-state">🎉 You've watched everything! Time to add more.</div>`
+      : `<div class="section-label">${toWatch.length} film${toWatch.length !== 1 ? 's' : ''} to watch</div>` + toWatch.map(f => renderFilmCard(f, false)).join('');
+  } else {
+    el.innerHTML = watched.length === 0
+      ? `<div class="empty-state">Nothing watched yet — mark a film as seen to move it here.</div>`
+      : `<div class="section-label">${watched.length} film${watched.length !== 1 ? 's' : ''} watched</div>` + watched.map(f => renderFilmCard(f, true)).join('');
+  }
+}
+
+loadFilms();
+</script>
+</body>
+</html>
