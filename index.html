@@ -97,6 +97,16 @@
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--surface); border: 1px solid var(--green); color: var(--green); font-size: 0.82rem; padding: 10px 20px; border-radius: 4px; z-index: 200; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
   .toast.show { opacity: 1; }
   .storage-note { font-size: 0.72rem; color: var(--muted); padding: 10px 32px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .idea-add-form { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .idea-input { flex: 1; min-width: 160px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; padding: 10px 12px; outline: none; transition: border-color 0.15s; }
+  .idea-input:focus { border-color: var(--gold); }
+  .idea-input::placeholder { color: var(--muted); }
+  .idea-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .idea-title { font-family: 'Playfair Display', serif; font-size: 1.05rem; color: var(--cream); }
+  .idea-note { font-size: 0.85rem; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+  .idea-date { font-size: 0.7rem; color: var(--muted); margin-top: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .btn-delete-idea { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; padding: 6px 12px; background: transparent; color: var(--muted); border: 1px solid var(--border); border-radius: 4px; cursor: pointer; flex-shrink: 0; transition: all 0.15s; }
+  .btn-delete-idea:hover { border-color: var(--red); color: var(--red); }
   @media (max-width: 600px) {
     .header, .tabs, .main { padding-left: 16px; padding-right: 16px; }
     .film-top { flex-direction: column; }
@@ -119,6 +129,7 @@
 <div class="tabs">
   <button class="tab active" id="tab-towatch" onclick="switchTab('towatch')">To Watch</button>
   <button class="tab" id="tab-watched" onclick="switchTab('watched')">Watched</button>
+  <button class="tab" id="tab-ideas" onclick="switchTab('ideas')">Ideas</button>
 </div>
 <div class="main" id="app-content"></div>
 <div id="modal" style="display:none"></div>
@@ -172,7 +183,10 @@ const DEFAULT_FILMS = [
   }
 ];
 
+const IDEAS_KEY = 'family-watchlist-ideas-v1';
+
 let films = [];
+let ideas = [];
 let currentTab = 'towatch';
 
 function showToast(msg) {
@@ -207,11 +221,49 @@ function saveFilms() {
   } catch (e) {}
 }
 
+function loadIdeas() {
+  try {
+    const saved = localStorage.getItem(IDEAS_KEY);
+    ideas = saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    ideas = [];
+  }
+}
+
+function saveIdeas() {
+  try {
+    localStorage.setItem(IDEAS_KEY, JSON.stringify(ideas));
+  } catch (e) {}
+}
+
+function addIdea() {
+  const titleInput = document.getElementById('idea-title-input');
+  const noteInput = document.getElementById('idea-note-input');
+  const title = titleInput.value.trim();
+  if (!title) return;
+  ideas.push({
+    id: 'idea-' + Date.now(),
+    title,
+    note: noteInput.value.trim() || null,
+    addedAt: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+  });
+  saveIdeas();
+  render();
+  showToast('✓ Added to your ideas');
+}
+
+function deleteIdea(id) {
+  ideas = ideas.filter(i => i.id !== id);
+  saveIdeas();
+  render();
+}
+
 function getExportData() {
   return JSON.stringify({
     exportedAt: new Date().toISOString(),
     version: 1,
-    films: films.map(f => ({ id: f.id, watched: f.watched, watchedDate: f.watchedDate, userReview: f.userReview }))
+    films: films.map(f => ({ id: f.id, watched: f.watched, watchedDate: f.watchedDate, userReview: f.userReview })),
+    ideas: ideas
   }, null, 2);
 }
 
@@ -281,6 +333,10 @@ function doImport() {
       const s = data.films.find(f => f.id === def.id);
       return s ? { ...def, watched: s.watched, watchedDate: s.watchedDate, userReview: s.userReview, reviewEditing: false } : { ...def };
     });
+    if (Array.isArray(data.ideas)) {
+      ideas = data.ideas;
+      saveIdeas();
+    }
     saveFilms();
     closeModal();
     render();
@@ -374,13 +430,31 @@ function render() {
     el.innerHTML = toWatch.length === 0
       ? `<div class="empty-state">🎉 You've watched everything! Time to add more.</div>`
       : `<div class="section-label">${toWatch.length} film${toWatch.length !== 1 ? 's' : ''} to watch</div>` + toWatch.map(f => renderFilmCard(f, false)).join('');
-  } else {
+  } else if (currentTab === 'watched') {
     el.innerHTML = watched.length === 0
       ? `<div class="empty-state">Nothing watched yet — mark a film as seen to move it here.</div>`
       : `<div class="section-label">${watched.length} film${watched.length !== 1 ? 's' : ''} watched</div>` + watched.map(f => renderFilmCard(f, true)).join('');
+  } else {
+    const addForm = `<div class="idea-add-form">
+      <input type="text" id="idea-title-input" class="idea-input" placeholder="Film title...">
+      <input type="text" id="idea-note-input" class="idea-input" placeholder="Optional note (who suggested it, why, etc.)">
+      <button class="btn-watched" onclick="addIdea()">+ Add</button>
+    </div>`;
+    const list = ideas.length === 0
+      ? `<div class="empty-state">No ideas yet — jot down a film here, then ask Claude to pull it into the main list with full details.</div>`
+      : ideas.map(i => `<div class="idea-card">
+          <div>
+            <div class="idea-title">${i.title}</div>
+            ${i.note ? `<div class="idea-note">${i.note}</div>` : ''}
+            <div class="idea-date">Added ${i.addedAt}</div>
+          </div>
+          <button class="btn-delete-idea" onclick="deleteIdea('${i.id}')">Remove</button>
+        </div>`).join('');
+    el.innerHTML = `<div class="section-label">Quick ideas — saved on this device only</div>` + addForm + list;
   }
 }
 
+loadIdeas();
 loadFilms();
 </script>
 </body>
