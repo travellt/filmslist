@@ -111,11 +111,9 @@
   .btn-share:hover { border-color: var(--gold); color: var(--gold); }
   .family-review { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
   .history-row { display: flex; gap: 16px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
-  .history-date { color: var(--muted); font-size: 0.75rem; min-width: 70px; flex-shrink: 0; }
+  .history-date { color: var(--muted); font-size: 0.75rem; min-width: 100px; flex-shrink: 0; }
   .history-picker { color: var(--gold-light); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; min-width: 70px; flex-shrink: 0; }
   .history-title { color: var(--text); }
-  .history-year-label { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold); margin: 24px 0 8px; }
-  .history-year-label:first-child { margin-top: 0; }
   @media (max-width: 600px) {
     .header, .tabs, .main { padding-left: 16px; padding-right: 16px; }
     .film-top { flex-direction: column; }
@@ -582,14 +580,8 @@ function render() {
       : `<div class="section-label">${watched.length} film${watched.length !== 1 ? 's' : ''} watched</div>` + watched.map(f => renderFilmCard(f, true)).join('');
   } else if (currentTab === 'history') {
     let html = `<div class="section-label">${FAMILY_HISTORY.length} family film nights logged</div>`;
-    let lastYear = null;
     [...FAMILY_HISTORY].sort((a, b) => b[0].localeCompare(a[0])).forEach(([date, picker, title]) => {
-      const year = date.slice(0, 4);
-      if (year !== lastYear) {
-        html += `<div class="history-year-label">${year}</div>`;
-        lastYear = year;
-      }
-      const dateStr = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      const dateStr = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
       html += `<div class="history-row"><div class="history-date">${dateStr}</div><div class="history-picker">${picker}</div><div class="history-title">${title}</div></div>`;
     });
     el.innerHTML = html;
