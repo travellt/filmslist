@@ -110,6 +110,12 @@
   .btn-share { font-family: 'DM Sans', sans-serif; font-size: 0.78rem; padding: 6px 14px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
   .btn-share:hover { border-color: var(--gold); color: var(--gold); }
   .family-review { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .history-row { display: flex; gap: 16px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+  .history-date { color: var(--muted); font-size: 0.75rem; min-width: 70px; flex-shrink: 0; }
+  .history-picker { color: var(--gold-light); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase; min-width: 70px; flex-shrink: 0; }
+  .history-title { color: var(--text); }
+  .history-year-label { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--gold); margin: 24px 0 8px; }
+  .history-year-label:first-child { margin-top: 0; }
   @media (max-width: 600px) {
     .header, .tabs, .main { padding-left: 16px; padding-right: 16px; }
     .film-top { flex-direction: column; }
@@ -133,6 +139,7 @@
   <button class="tab active" id="tab-towatch" onclick="switchTab('towatch')">To Watch</button>
   <button class="tab" id="tab-watched" onclick="switchTab('watched')">Watched</button>
   <button class="tab" id="tab-ideas" onclick="switchTab('ideas')">Ideas</button>
+  <button class="tab" id="tab-history" onclick="switchTab('history')">History</button>
 </div>
 <div class="main" id="app-content"></div>
 <div id="modal" style="display:none"></div>
@@ -194,6 +201,136 @@ const DEFAULT_FILMS = [
 ];
 
 const REPO_URL = 'https://github.com/travellt/filmslist';
+
+// Transcribed from the family's handwritten "Family Film" log book.
+// [date, picker, title] — entries marked (?) may need correcting.
+const FAMILY_HISTORY = [
+  ['2022-10-30', 'Mummy', 'Mrs Doubtfire'],
+  ['2022-11-04', 'Daddy', 'Holes'],
+  ['2022-11-11', 'Leo', 'The Rookie'],
+  ['2022-11-26', 'Bella', '100% Wolf'],
+  ['2022-12-04', 'Mummy', 'Dreambuilders'],
+  ['2022-12-08', 'Daddy', 'Unaccompanied Minors'],
+  ['2022-12-16', 'Leo', 'Diary of a Wimpy Kid: Roderick Rules'],
+  ['2022-12-23', 'Bella', 'Sonic the Hedgehog 2'],
+  ['2022-12-30', 'Mummy', 'The Lizzie McGuire Movie (?)'],
+  ['2023-01-06', 'Daddy', 'The Greatest Showman (?)'],
+  ['2023-01-13', 'Leo', 'Cloudy with a Chance of Meatballs'],
+  ['2023-01-20', 'Bella', 'Strange World'],
+  ['2023-01-27', 'Mummy', 'Cruella'],
+  ['2023-02-03', 'Daddy', 'Bill'],
+  ['2023-02-10', 'Leo', "The Hitchhiker's Guide to the Galaxy"],
+  ['2023-02-17', 'Bella', 'Hotel Transylvania 3'],
+  ['2023-02-24', 'Mummy', 'Tom & Jerry'],
+  ['2023-03-03', 'Daddy', 'We Bought a Zoo'],
+  ['2023-03-10', 'Leo', 'Ice Age 2 (cinema)'],
+  ['2023-03-17', 'Bella', 'Puss in Boots: The Last Wish'],
+  ['2023-03-29', 'Mummy', 'Flight of the Navigator'],
+  ['2023-03-31', 'Daddy', 'The Kid Who Would Be King'],
+  ['2023-04-07', 'Leo', 'E.T.'],
+  ['2023-04-14', 'Bella', 'Hotel Transylvania 4'],
+  ['2023-04-21', 'Mummy', 'Casper'],
+  ['2023-04-28', 'Daddy', 'Matilda the Musical'],
+  ['2023-05-05', 'Leo', 'Night at the Museum'],
+  ['2023-05-12', 'Bella', 'Godmothered'],
+  ['2023-05-20', 'Mummy', 'The Simpsons Movie'],
+  ['2023-06-02', 'Daddy', 'Men in Black'],
+  ['2023-06-18', 'Leo', 'Yes Day'],
+  ['2023-06-25', 'Bella', 'The BFG'],
+  ['2023-07-01', 'Mummy', 'Wonder'],
+  ['2023-07-07', 'Daddy', 'Good Burger'],
+  ['2023-07-15', 'Leo', 'Johnny English Strikes Again'],
+  ['2023-07-22', 'Bella', 'Paw Patrol: The Movie'],
+  ['2023-07-29', 'Mummy', 'My Neighbor Totoro'],
+  ['2023-08-11', 'Daddy', 'Minions: The Rise of Gru'],
+  ['2023-08-18', 'Leo', 'Star Wars: Attack of the Clones'],
+  ['2023-08-25', 'Bella', 'Miraculous: Ladybug & Cat Noir, The Movie (?)'],
+  ['2023-09-01', 'Mummy', 'The Mitchells vs. the Machines'],
+  ['2023-09-23', 'Daddy', 'Mission: Impossible'],
+  ['2023-09-30', 'Leo', 'The Pirates! In an Adventure with Scientists! (Aardman)'],
+  ['2023-10-08', 'Bella', 'Elemental'],
+  ['2023-10-15', 'Mummy', 'The Little Mermaid'],
+  ['2023-11-04', 'Daddy', 'Fantastic Four'],
+  ['2023-11-11', 'Leo', 'A Million Miles Away'],
+  ['2023-11-25', 'Bella', 'Barbie'],
+  ['2023-12-16', 'Mummy', 'Family Switch'],
+  ['2023-12-23', 'Daddy', 'Falling for Christmas'],
+  ['2023-12-30', 'Leo', 'Rogue One'],
+  ['2024-01-05', 'Bella', 'Nimona'],
+  ['2024-01-12', 'Mummy', 'Chicken Run'],
+  ['2024-01-19', 'Daddy', 'Good Burger 2'],
+  ['2024-01-26', 'Leo', 'Chicken Run: Dawn of the Nugget'],
+  ['2024-02-09', 'Bella', 'Orion and the Dark'],
+  ['2024-02-17', 'Mummy', 'Spirited Away'],
+  ['2024-02-24', 'Daddy', 'Wonka'],
+  ['2024-03-16', 'Leo', 'The Spy Who Loved Me'],
+  ['2024-03-29', 'Bella', 'The Loud House Movie'],
+  ['2024-04-06', 'Mummy', 'Wonderstruck'],
+  ['2024-04-13', 'Daddy', 'My Octopus Teacher'],
+  ['2024-04-27', 'Bella', 'The Sleepover'],
+  ['2024-05-11', 'Mummy', 'Karate Kid (2024) (?)'],
+  ['2024-05-18', 'Daddy', 'Jumanji (2017)'],
+  ['2024-05-25', 'Grandad & Grandma', 'Pirates of the Caribbean: The Curse of the Black Pearl'],
+  ['2024-05-31', 'Leo', 'Pirates of the Caribbean: Dead Man\'s Chest'],
+  ['2024-06-08', 'Bella', 'Pirates of the Caribbean: At World\'s End'],
+  ['2024-06-22', 'Mummy', 'Jumanji: The Next Level'],
+  ['2024-06-29', 'Daddy', 'The Pink Panther (2006)'],
+  ['2024-07-26', 'Leo', 'Jurassic Park (1993)'],
+  ['2024-08-17', 'Bella', "Madagascar 3: Europe's Most Wanted"],
+  ['2024-08-23', 'Mummy', '13 Going on 30'],
+  ['2024-08-30', 'Daddy', 'Fantastic Beasts and Where to Find Them'],
+  ['2024-09-07', 'Leo', 'The World Is Not Enough'],
+  ['2024-09-14', 'Bella', 'Fantastic Beasts: The Crimes of Grindelwald'],
+  ['2024-09-21', 'Mummy', 'The Chronicles of Narnia: The Lion, the Witch and the Wardrobe'],
+  ['2024-09-28', 'Daddy', 'The Truman Show'],
+  ['2024-10-11', 'Leo', 'Spectre'],
+  ['2024-10-18', 'Bella', 'Despicable Me 4'],
+  ['2024-11-03', 'Mummy', 'Pitch Perfect'],
+  ['2024-11-23', 'Daddy', 'Get Smart'],
+  ['2024-12-07', 'Family', 'That Christmas (cinema) (date approx)'],
+  ['2024-12-14', 'Family', 'Paddington in Peru (date approx)'],
+  ['2024-12-21', 'Family', 'Inside Out 2 (date approx)'],
+  ['2024-12-28', 'Family', 'Sonic the Hedgehog 3 (cinema) (date approx)'],
+  ['2025-01-19', 'Leo', 'Star Wars: The Last Jedi'],
+  ['2025-02-22', 'Family', 'The Wild Robot (?)'],
+  ['2025-03-01', 'Family', 'Legally Blonde (?)'],
+  ['2025-03-05', 'Family', 'Moana 2 (?)'],
+  ['2025-03-05', 'Leo, Mummy & Daddy', 'Austin Powers'],
+  ['2025-05-03', 'Mummy', 'Wish'],
+  ['2025-05-23', 'Daddy', 'Dog Man'],
+  ['2025-06-07', 'Leo', 'Indiana Jones and the Raiders of the Lost Ark'],
+  ['2025-06-14', 'Bella', 'Snow White'],
+  ['2025-06-21', 'Mummy', 'Grease'],
+  ['2025-06-28', 'Daddy', "World's Best (?)"],
+  ['2025-07-05', 'Leo', 'Mission: Impossible – Fallout (?)'],
+  ['2025-07-12', 'Bella', 'KPop Demon Hunters'],
+  ['2025-07-22', 'Family', 'Wicked (?)'],
+  ['2025-08-23', 'Mummy', 'Spider-Man: Far From Home'],
+  ['2025-08-30', 'Daddy', 'Star Wars: Episode III – Revenge of the Sith'],
+  ['2025-09-06', 'Leo', 'Lilo & Stitch (live-action)'],
+  ['2025-09-13', 'Bella', 'Star Wars: The Phantom Menace (date approx)'],
+  ['2025-09-27', 'Mummy', 'Megamind'],
+  ['2025-10-04', 'Daddy', 'The Pursuit of Happyness'],
+  ['2025-10-11', 'Leo', 'The Twits'],
+  ['2025-10-18', 'Bella', 'Elio'],
+  ['2025-10-25', 'Family', 'Cornwall trip — no film'],
+  ['2025-11-01', 'Mummy', 'Thunderbolts*'],
+  ['2025-11-16', 'Daddy', 'Ant-Man'],
+  ['2025-11-16', 'Leo', 'Ant-Man and the Wasp (?)'],
+  ['2025-11-16', 'Bella', 'Freakier Friday'],
+  ['2025-12-20', 'Family', 'Avengers: Civil War (?)'],
+  ['2026-01-02', 'Daddy', 'Wicked: For Good (cinema)'],
+  ['2026-01-09', 'Leo', 'Big Daddy'],
+  ['2026-01-31', 'Bella', 'A Minecraft Movie'],
+  ['2026-02-21', 'Family', 'Zootropolis 2 (cinema)'],
+  ['2026-02-28', 'Mummy', 'Avatar'],
+  ['2026-03-14', 'Daddy', 'The Boy Who Harnessed the Wind'],
+  ['2026-03-28', 'Leo', 'Top Gun'],
+  ['2026-05-02', 'Bella', 'Mamma Mia'],
+  ['2026-05-09', 'Bella', 'Dodgeball'],
+  ['2026-05-16', 'Daddy', 'Hunger Games (1)'],
+  ['2026-05-24', 'Daddy', 'CODA']
+];
 
 let films = [];
 let currentTab = 'towatch';
@@ -443,6 +580,19 @@ function render() {
     el.innerHTML = watched.length === 0
       ? `<div class="empty-state">Nothing watched yet — mark a film as seen to move it here.</div>`
       : `<div class="section-label">${watched.length} film${watched.length !== 1 ? 's' : ''} watched</div>` + watched.map(f => renderFilmCard(f, true)).join('');
+  } else if (currentTab === 'history') {
+    let html = `<div class="section-label">${FAMILY_HISTORY.length} family film nights logged</div>`;
+    let lastYear = null;
+    [...FAMILY_HISTORY].sort((a, b) => b[0].localeCompare(a[0])).forEach(([date, picker, title]) => {
+      const year = date.slice(0, 4);
+      if (year !== lastYear) {
+        html += `<div class="history-year-label">${year}</div>`;
+        lastYear = year;
+      }
+      const dateStr = new Date(date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      html += `<div class="history-row"><div class="history-date">${dateStr}</div><div class="history-picker">${picker}</div><div class="history-title">${title}</div></div>`;
+    });
+    el.innerHTML = html;
   } else {
     const addForm = `<div class="idea-add-form">
       <input type="text" id="idea-title-input" class="idea-input" placeholder="Film title...">
