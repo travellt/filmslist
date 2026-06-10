@@ -102,6 +102,14 @@
   .idea-input:focus { border-color: var(--gold); }
   .idea-input::placeholder { color: var(--muted); }
   .idea-note-text { font-size: 0.82rem; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+  .star-rating { display: flex; gap: 4px; margin-bottom: 10px; }
+  .star-btn { background: none; border: none; cursor: pointer; font-size: 1.4rem; line-height: 1; padding: 0; color: var(--border); transition: color 0.15s; }
+  .star-btn.filled { color: var(--gold); }
+  .star-btn:hover { color: var(--gold-light); }
+  .stars-display { color: var(--gold); font-size: 1rem; letter-spacing: 2px; margin-bottom: 6px; }
+  .btn-share { font-family: 'DM Sans', sans-serif; font-size: 0.78rem; padding: 6px 14px; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 4px; cursor: pointer; transition: all 0.15s; }
+  .btn-share:hover { border-color: var(--gold); color: var(--gold); }
+  .family-review { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border); }
   @media (max-width: 600px) {
     .header, .tabs, .main { padding-left: 16px; padding-right: 16px; }
     .film-top { flex-direction: column; }
@@ -139,49 +147,49 @@ const DEFAULT_FILMS = [
     synopsis: 'Two brothers in suburban Widnes find a bag stuffed with stolen cash flung from a passing train. Nine-year-old Damian wants to give it all to the poor; older brother Anthony wants to buy property. Then the robber comes looking for it.',
     whyGood: "Danny Boyle's only family film — and a hidden gem. Lego-bright colours, real warmth, and a boy's-eye view of faith and greed that sneaks up on you. The closest thing to CODA in spirit: funny, sad, and quietly brilliant.",
     rtTomatometer: 87, rtPopcornmeter: null, whereToWatch: ['Disney+'],
-    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false, rating: null
   },
   {
     id: 'sing-street', title: 'Sing Street', year: 2016, cert: '12', csmAge: '13+',
     synopsis: '1985 Dublin. Teenager Conor, transferred to a tough inner-city school and trying to impress a beautiful older girl, forms a band and starts writing original songs in the style of Duran Duran, The Cure and Hall & Oates.',
     whyGood: "95% on Rotten Tomatoes and every bit of it earned. Original songs so good you'll be humming them for days. The same joyful music-as-escape DNA as CODA, with an 80s soundtrack that parents will adore. CSM is cautious — 12-year-olds are absolutely fine.",
     rtTomatometer: 95, rtPopcornmeter: 92, whereToWatch: ['Rent/Buy', 'Check streamers'],
-    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false, rating: null
   },
   {
     id: 'princess-bride', title: 'The Princess Bride', year: 1987, cert: 'PG', csmAge: '10+',
     synopsis: "Westley, a farm boy, must rescue his true love Buttercup from a scheming prince. Along the way: a giant, a master swordsman, a Sicilian criminal genius, and the immortal line 'As you wish.' Framed as a grandfather reading a storybook.",
     whyGood: "One of the most beloved family films ever made — 94% audience score from 250,000+ ratings. Swashbuckling, romantic, hilarious, and endlessly quotable.",
     rtTomatometer: 93, rtPopcornmeter: 94, whereToWatch: ['Disney+'],
-    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false, rating: null
   },
   {
     id: 'free-guy', title: 'Free Guy', year: 2021, cert: '12', csmAge: '12+',
     synopsis: 'Guy is a cheerful bank teller living in Free City — a chaotic open-world video game. When he realises he is actually a background NPC, he decides to become the hero of his own story.',
     whyGood: "Ryan Reynolds in a genuinely clever concept. The game-world visuals keep younger viewers hooked. 94% Popcornmeter from 5,000+ verified ratings.",
     rtTomatometer: 80, rtPopcornmeter: 94, whereToWatch: ['Disney+'],
-    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false, rating: null
   },
   {
     id: 'cool-runnings', title: 'Cool Runnings', year: 1993, cert: 'PG', csmAge: '8+',
     synopsis: "When Jamaican sprinter Derice Bannock misses the Olympics, he talks a disgraced former bobsled champion (John Candy) into coaching Jamaica's first-ever bobsled team — four men who've never seen snow.",
     whyGood: "A timeless underdog comedy that still holds up. John Candy is wonderful. Pure feel-good family viewing with genuine laughs and a surprisingly moving finale.",
     rtTomatometer: 75, rtPopcornmeter: 81, whereToWatch: ['Disney+'],
-    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false, rating: null
   },
   {
     id: 'adam-project', title: 'The Adam Project', year: 2022, cert: '12', csmAge: '10+',
     synopsis: 'Time-travelling pilot Adam Reed crash-lands in his childhood garden and teams up with his nerdy 12-year-old self. Together they must find their late father — and stop a threat to the future.',
     whyGood: "Fast, fun, and surprisingly tender about grief and father-son relationships. Ryan Reynolds and the kid actor have brilliant chemistry. On Netflix right now.",
     rtTomatometer: 68, rtPopcornmeter: 73, whereToWatch: ['Netflix'],
-    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false, rating: null
   },
   {
     id: 'hoppers', title: 'Hoppers', year: 2026, cert: 'U', csmAge: '8+',
     synopsis: "College student Mabel discovers a way to transfer her consciousness into a lifelike robotic beaver, letting her communicate directly with animals. Using it to investigate threats to a forest glade, she uncovers mysteries in the animal world far bigger than she expected.",
     whyGood: "Pixar's best-reviewed film in years (94% Tomatometer) — fresh, funny and full of heart, with a strong animal-activism streak. Worth noting: this is fully animated, which is usually a lower priority for this list, but the reviews and 'classic Pixar' warmth make it a strong pick — added per your suggestion.",
     rtTomatometer: 94, rtPopcornmeter: 93, whereToWatch: ['Disney+'],
-    watched: false, watchedDate: null, userReview: null, reviewEditing: false
+    watched: false, watchedDate: null, userReview: null, reviewEditing: false, rating: null
   }
 ];
 
@@ -204,7 +212,7 @@ function loadFilms() {
       const parsed = JSON.parse(saved);
       films = DEFAULT_FILMS.map(def => {
         const s = parsed.find(f => f.id === def.id);
-        return s ? { ...def, watched: s.watched, watchedDate: s.watchedDate, userReview: s.userReview, reviewEditing: false } : { ...def };
+        return s ? { ...def, watched: s.watched, watchedDate: s.watchedDate, userReview: s.userReview, reviewEditing: false, rating: s.rating != null ? s.rating : null } : { ...def };
       });
     } else {
       films = DEFAULT_FILMS.map(f => ({ ...f }));
@@ -217,7 +225,7 @@ function loadFilms() {
 
 function saveFilms() {
   try {
-    const toSave = films.map(f => ({ id: f.id, watched: f.watched, watchedDate: f.watchedDate, userReview: f.userReview }));
+    const toSave = films.map(f => ({ id: f.id, watched: f.watched, watchedDate: f.watchedDate, userReview: f.userReview, rating: f.rating }));
     localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
   } catch (e) {}
 }
@@ -240,7 +248,7 @@ function getExportData() {
   return JSON.stringify({
     exportedAt: new Date().toISOString(),
     version: 1,
-    films: films.map(f => ({ id: f.id, watched: f.watched, watchedDate: f.watchedDate, userReview: f.userReview }))
+    films: films.map(f => ({ id: f.id, watched: f.watched, watchedDate: f.watchedDate, userReview: f.userReview, rating: f.rating }))
   }, null, 2);
 }
 
@@ -358,6 +366,28 @@ function saveReview(id) {
   }
 }
 
+function setRating(id, stars) {
+  const f = films.find(f => f.id === id);
+  if (!f) return;
+  f.rating = (f.rating === stars) ? null : stars;
+  const container = document.getElementById('stars-' + id);
+  if (container) {
+    container.querySelectorAll('.star-btn').forEach((btn, idx) => {
+      btn.classList.toggle('filled', f.rating !== null && idx < f.rating);
+    });
+  }
+}
+
+function submitReview(id) {
+  const f = films.find(f => f.id === id);
+  if (!f) return;
+  const stars = f.rating ? '★'.repeat(f.rating) + '☆'.repeat(5 - f.rating) + ` (${f.rating}/5)` : 'Not rated';
+  const issueTitle = 'Review: ' + f.title;
+  const issueBody = `**Rating:** ${stars}\n\n**Review:**\n${(f.userReview || '').trim() || '_No written review._'}`;
+  const url = `${REPO_URL}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}`;
+  window.open(url, '_blank');
+}
+
 function switchTab(tab) {
   currentTab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -372,15 +402,21 @@ function renderFilmCard(f, inWatched) {
 
   let reviewHtml = '';
   if (inWatched) {
+    const starPicker = `<div class="review-label">Your rating</div><div class="star-rating" id="stars-${f.id}">${[1,2,3,4,5].map(n => `<button class="star-btn${f.rating && n <= f.rating ? ' filled' : ''}" onclick="setRating('${f.id}', ${n})">★</button>`).join('')}</div>`;
+    const starsDisplay = f.rating ? `<div class="stars-display">${'★'.repeat(f.rating)}${'☆'.repeat(5 - f.rating)}</div>` : '';
     if (f.reviewEditing) {
       const existing = f.userReview || '';
-      reviewHtml = `<div class="review-section"><div class="review-label">Your review</div><textarea class="review-input" id="review-${f.id}" placeholder="What did you think? Did the kids enjoy it?">${existing}</textarea><div style="display:flex;gap:8px;align-items:center;margin-top:8px;"><button class="btn-save" onclick="saveReview('${f.id}')">Save review</button>${existing ? `<button class="btn-review" onclick="toggleReviewEdit('${f.id}')">Cancel</button>` : ''}</div></div>`;
-    } else if (f.userReview) {
-      reviewHtml = `<div class="review-section"><div class="review-label">Your review</div><div class="review-text">${f.userReview}</div><button class="btn-review" onclick="toggleReviewEdit('${f.id}')" style="margin-top:8px;font-size:0.75rem">Edit review</button></div>`;
+      reviewHtml = `<div class="review-section">${starPicker}<div class="review-label">Your review</div><textarea class="review-input" id="review-${f.id}" placeholder="What did you think? Did the kids enjoy it?">${existing}</textarea><div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;"><button class="btn-save" onclick="saveReview('${f.id}')">Save review</button><button class="btn-share" onclick="submitReview('${f.id}')">Share with family</button>${existing ? `<button class="btn-review" onclick="toggleReviewEdit('${f.id}')">Cancel</button>` : ''}</div></div>`;
+    } else if (f.userReview || f.rating) {
+      reviewHtml = `<div class="review-section">${starsDisplay}${f.userReview ? `<div class="review-label">Your review</div><div class="review-text">${f.userReview}</div>` : ''}<div style="display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;"><button class="btn-review" onclick="toggleReviewEdit('${f.id}')" style="font-size:0.75rem">Edit review</button><button class="btn-share" onclick="submitReview('${f.id}')">Share with family</button></div></div>`;
     } else {
       reviewHtml = `<div class="review-section"><button class="btn-review" onclick="toggleReviewEdit('${f.id}')">+ Add your review</button></div>`;
     }
   }
+
+  const familyHtml = (f.familyRating || f.familyReview)
+    ? `<div class="family-review"><div class="review-label">Family verdict</div>${f.familyRating ? `<div class="stars-display">${'★'.repeat(f.familyRating)}${'☆'.repeat(5 - f.familyRating)}</div>` : ''}${f.familyReview ? `<div class="review-text">${f.familyReview}</div>` : ''}</div>`
+    : '';
 
   const actions = inWatched
     ? `<div class="film-actions"><span class="watched-badge">✓ Watched${f.watchedDate ? ' · ' + f.watchedDate : ''}</span><button class="btn-unwatch" onclick="markUnwatched('${f.id}')">Move back to list</button></div>`
@@ -391,7 +427,7 @@ function renderFilmCard(f, inWatched) {
     <div class="film-synopsis">${f.synopsis}</div>
     <div class="film-why">${f.whyGood}</div>
     <div class="film-meta">${rtTomato}${rtPop}<div class="meta-item"><div class="meta-label">Where to watch</div><div class="where-pills">${wherePills}</div></div></div>
-    ${actions}${reviewHtml}
+    ${actions}${reviewHtml}${familyHtml}
   </div>`;
 }
 
@@ -413,7 +449,7 @@ function render() {
       <input type="text" id="idea-note-input" class="idea-input" placeholder="Optional note (who suggested it, why, etc.)">
       <button class="btn-watched" onclick="submitIdea()">+ Submit idea</button>
     </div>`;
-    const note = `<div class="idea-note-text">This opens a new GitHub tab with the idea pre-filled as an issue — just hit "Submit new issue" there. Claude can then pull it into the main list with full details next time you ask.</div>`;
+    const note = `<div class="idea-note-text">This opens a new GitHub tab with the idea pre-filled as an issue — just hit "Submit new issue" there. Claude can then pull it into the main list with full details next time you ask. The same goes for "Share with family" on a watched film's review — that submits your rating and review the same way, ready to be added as the family verdict.</div>`;
     el.innerHTML = `<div class="section-label">Suggest a film</div>` + addForm + note;
   }
 }
